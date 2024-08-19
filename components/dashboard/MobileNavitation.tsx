@@ -4,9 +4,16 @@ import {
   Dialog,
   DialogBackdrop,
   DialogPanel,
+  Disclosure,
+  DisclosureButton,
+  DisclosurePanel,
   TransitionChild,
 } from '@headlessui/react';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import {
+  Bars3Icon,
+  ChevronRightIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -99,28 +106,70 @@ export function MobileNavigation() {
                       Your teams
                     </div>
                     <ul role="list" className="-mx-2 mt-2 space-y-1">
-                      {configuration.map((item) => (
+                      {configuration.map((item: any) => (
                         <li key={item.name}>
-                          <a
-                            href={item.href}
-                            className={clsx(
-                              item.current
-                                ? 'bg-gray-50 text-indigo-600'
-                                : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600',
-                              'group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6',
-                            )}
-                          >
-                            <item.icon
-                              aria-hidden="true"
+                          {!item.children ? (
+                            <a
+                              href={item.href}
                               className={clsx(
                                 item.current
-                                  ? 'text-indigo-600'
-                                  : 'text-gray-400 group-hover:text-indigo-600',
-                                'h-6 w-6 shrink-0',
+                                  ? 'bg-gray-50 text-indigo-600'
+                                  : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600',
+                                'group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6',
                               )}
-                            />
-                            {item.name}
-                          </a>
+                            >
+                              <item.icon
+                                aria-hidden="true"
+                                className={clsx(
+                                  item.current
+                                    ? 'text-indigo-600'
+                                    : 'text-gray-400 group-hover:text-indigo-600',
+                                  'h-6 w-6 shrink-0',
+                                )}
+                              />
+                              {item.name}
+                            </a>
+                          ) : (
+                            <Disclosure as="div" defaultOpen={item.current}>
+                              <DisclosureButton
+                                className={clsx(
+                                  item.current
+                                    ? 'bg-gray-50 text-indigo-600'
+                                    : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600',
+                                  'group flex w-full items-center gap-x-3 rounded-md p-2 text-left text-sm font-semibold leading-6 text-gray-700',
+                                )}
+                              >
+                                <item.icon
+                                  aria-hidden="true"
+                                  className="h-6 w-6 shrink-0 text-gray-400"
+                                />
+                                {item.name}
+                                <ChevronRightIcon
+                                  aria-hidden="true"
+                                  className="ml-auto h-5 w-5 shrink-0 text-gray-400 group-data-[open]:rotate-90 group-data-[open]:text-gray-500"
+                                />
+                              </DisclosureButton>
+                              <DisclosurePanel as="ul" className="mt-1 px-2">
+                                {item.children.map((subItem: any) => (
+                                  <li key={subItem.name}>
+                                    {/* 44px */}
+                                    <DisclosureButton
+                                      as="a"
+                                      href={subItem.href}
+                                      className={clsx(
+                                        subItem.current
+                                          ? 'bg-gray-50'
+                                          : 'hover:bg-gray-50',
+                                        'block rounded-md py-2 pl-9 pr-2 text-sm leading-6 text-gray-700',
+                                      )}
+                                    >
+                                      {subItem.name}
+                                    </DisclosureButton>
+                                  </li>
+                                ))}
+                              </DisclosurePanel>
+                            </Disclosure>
+                          )}
                         </li>
                       ))}
                     </ul>
