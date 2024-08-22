@@ -4,23 +4,11 @@ import {
   Dialog,
   DialogBackdrop,
   DialogPanel,
-  Disclosure,
-  DisclosureButton,
-  DisclosurePanel,
   TransitionChild,
 } from '@headlessui/react';
-import {
-  Bars3Icon,
-  ChevronRightIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline';
-import clsx from 'clsx';
-import Link from 'next/link';
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
-import { Logo } from '../core/Logo';
-import { SIDEBAR_NAVIGATION } from './constants';
-
-const { navigation, configuration } = SIDEBAR_NAVIGATION;
+import { Sidebar } from './Sidebar';
 
 export function MobileNavigation() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -66,116 +54,7 @@ export function MobileNavigation() {
             </TransitionChild>
             {/* Sidebar component, swap this element with another sidebar if you like */}
             <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-4">
-              <div className="flex h-16 shrink-0 items-center">
-                <Link href="/" aria-label="Home">
-                  <Logo className="h-6 w-auto" />
-                </Link>
-              </div>
-              <nav className="flex flex-1 flex-col">
-                <ul role="list" className="flex flex-1 flex-col gap-y-7">
-                  <li>
-                    <ul role="list" className="-mx-2 space-y-1">
-                      {navigation.map((item) => (
-                        <li key={item.name}>
-                          <a
-                            href={item.href}
-                            className={clsx(
-                              item.current
-                                ? 'bg-gray-50 text-indigo-600'
-                                : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600',
-                              'group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6',
-                            )}
-                          >
-                            <item.icon
-                              aria-hidden="true"
-                              className={clsx(
-                                item.current
-                                  ? 'text-indigo-600'
-                                  : 'text-gray-400 group-hover:text-indigo-600',
-                                'h-6 w-6 shrink-0',
-                              )}
-                            />
-                            {item.name}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </li>
-                  <li>
-                    <div className="text-xs font-semibold leading-6 text-gray-400">
-                      Your teams
-                    </div>
-                    <ul role="list" className="-mx-2 mt-2 space-y-1">
-                      {configuration.map((item: any) => (
-                        <li key={item.name}>
-                          {!item.children ? (
-                            <a
-                              href={item.href}
-                              className={clsx(
-                                item.current
-                                  ? 'bg-gray-50 text-indigo-600'
-                                  : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600',
-                                'group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6',
-                              )}
-                            >
-                              <item.icon
-                                aria-hidden="true"
-                                className={clsx(
-                                  item.current
-                                    ? 'text-indigo-600'
-                                    : 'text-gray-400 group-hover:text-indigo-600',
-                                  'h-6 w-6 shrink-0',
-                                )}
-                              />
-                              {item.name}
-                            </a>
-                          ) : (
-                            <Disclosure as="div" defaultOpen={item.current}>
-                              <DisclosureButton
-                                className={clsx(
-                                  item.current
-                                    ? 'bg-gray-50 text-indigo-600'
-                                    : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600',
-                                  'group flex w-full items-center gap-x-3 rounded-md p-2 text-left text-sm font-semibold leading-6 text-gray-700',
-                                )}
-                              >
-                                <item.icon
-                                  aria-hidden="true"
-                                  className="h-6 w-6 shrink-0 text-gray-400"
-                                />
-                                {item.name}
-                                <ChevronRightIcon
-                                  aria-hidden="true"
-                                  className="ml-auto h-5 w-5 shrink-0 text-gray-400 group-data-[open]:rotate-90 group-data-[open]:text-gray-500"
-                                />
-                              </DisclosureButton>
-                              <DisclosurePanel as="ul" className="mt-1 px-2">
-                                {item.children.map((subItem: any) => (
-                                  <li key={subItem.name}>
-                                    {/* 44px */}
-                                    <DisclosureButton
-                                      as="a"
-                                      href={subItem.href}
-                                      className={clsx(
-                                        subItem.current
-                                          ? 'bg-gray-50'
-                                          : 'hover:bg-gray-50',
-                                        'block rounded-md py-2 pl-9 pr-2 text-sm leading-6 text-gray-700',
-                                      )}
-                                    >
-                                      {subItem.name}
-                                    </DisclosureButton>
-                                  </li>
-                                ))}
-                              </DisclosurePanel>
-                            </Disclosure>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  </li>
-                </ul>
-              </nav>
+              <Sidebar />
             </div>
           </DialogPanel>
         </div>

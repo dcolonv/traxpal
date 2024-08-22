@@ -6,22 +6,27 @@
     "start": "next start"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^0.0.44",
+    "@ai-sdk/openai": "^0.0.50",
     "@headlessui/react": "^2.1.2",
     "@headlessui/tailwindcss": "^0.2.1",
     "@heroicons/react": "^2.1.5",
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
     "@tailwindcss/forms": "^0.5.7",
+    "ai": "^3.3.12",
     "autoprefixer": "10.4.17",
     "clsx": "^2.1.0",
     "date-fns": "^3.6.0",
     "geist": "^1.2.1",
     "next": "latest",
+    "openai": "^4.56.0",
     "postcss": "8.4.33",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "tailwindcss": "3.4.1",
     "typescript": "5.3.3",
+    "xlsx": "^0.18.5",
     "xml2js": "^0.6.2"
   },
   "devDependencies": {

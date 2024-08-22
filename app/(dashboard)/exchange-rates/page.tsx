@@ -3,6 +3,37 @@ import { format, parseISO } from 'date-fns';
 
 export const dynamic = 'force-dynamic';
 
+const secondaryNavigation = [
+  { name: 'USD - CRC', href: '/exchange-rates?type=USD-CRC', current: true },
+];
+
+const stats = [
+  {
+    name: 'Revenue',
+    value: '$405,091.00',
+    change: '+4.75%',
+    changeType: 'positive',
+  },
+  {
+    name: 'Overdue invoices',
+    value: '$12,787.00',
+    change: '+54.02%',
+    changeType: 'negative',
+  },
+  {
+    name: 'Outstanding invoices',
+    value: '$245,988.00',
+    change: '-1.39%',
+    changeType: 'positive',
+  },
+  {
+    name: 'Expenses',
+    value: '$30,156.00',
+    change: '+10.18%',
+    changeType: 'negative',
+  },
+];
+
 interface ExchangeRate {
   id: number;
   type: string;
@@ -48,71 +79,70 @@ export default async function ExchangeRatesPage({
   }
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
-      <div className="sm:flex sm:items-center">
-        <div className="sm:flex-auto">
-          <h1 className="text-base font-semibold leading-6 text-gray-900">
-            Exchange rate
-          </h1>
-          <p className="mt-2 text-sm text-gray-700">
-            A table of historical exchange rate USD - Costarican Colones.
-          </p>
-        </div>
-        {/* <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-          <button
-            type="button"
-            className="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            onClick={() => fetchExchangeRates('16/08/2024', '18/08/2024')}
-          >
-            Update
-          </button>
-        </div> */}
-      </div>
-      <div className="mt-8 flow-root">
-        <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div className="min-w-sm inline-block py-2 align-middle sm:px-6 lg:px-8">
-            <table className="min-w-full divide-y divide-gray-300">
-              <thead>
-                <tr className="divide-x divide-gray-200">
-                  <th
-                    scope="col"
-                    className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-                  >
-                    Date
-                  </th>
-                  <th
-                    scope="col"
-                    className="whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-900"
-                  >
-                    Buy
-                  </th>
-                  <th
-                    scope="col"
-                    className="whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-900"
-                  >
-                    Sell
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 bg-white">
-                {rates.map((rate) => (
-                  <tr key={rate.date} className="divide-x divide-gray-200">
-                    <td className="whitespace-nowrap py-2 pl-4 pr-3 text-sm text-gray-500 sm:pl-0">
-                      {formatDate(rate.date)}
-                    </td>
-                    <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500">
-                      {rate.buy}
-                    </td>
-                    <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500">
-                      {rate.sell}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+    <main className="py-8">
+      <div className="relative isolate overflow-hidden">
+        <header className="border-b border-b-gray-900/10 py-4">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-6 px-4 sm:flex-nowrap sm:px-6 lg:px-8">
+            <h1 className="text-base font-semibold leading-7 text-gray-900">
+              Exchange rates
+            </h1>
+            <div className="order-last flex w-full gap-x-8 text-sm font-semibold leading-6 sm:order-none sm:w-auto sm:border-l sm:border-gray-200 sm:pl-6 sm:leading-7">
+              {secondaryNavigation.map((item) => (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  className={item.current ? 'text-indigo-600' : 'text-gray-700'}
+                >
+                  {item.name}
+                </a>
+              ))}
+            </div>
           </div>
+        </header>
+      </div>
+      <div className="flow-root p-8">
+        <div className="inline-block min-w-full align-middle">
+          <table className="min-w-full divide-y divide-gray-300">
+            <thead>
+              <tr className="divide-x divide-gray-200">
+                <th
+                  scope="col"
+                  className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
+                >
+                  Date
+                </th>
+                <th
+                  scope="col"
+                  className="whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-900"
+                >
+                  Buy
+                </th>
+                <th
+                  scope="col"
+                  className="whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-900"
+                >
+                  Sell
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 bg-white">
+              {rates.map((rate) => (
+                <tr key={rate.date} className="divide-x divide-gray-200">
+                  <td className="whitespace-nowrap py-2 pl-4 pr-3 text-sm text-gray-500 sm:pl-0">
+                    {formatDate(rate.date)}
+                  </td>
+                  <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500">
+                    {rate.buy}
+                  </td>
+                  <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500">
+                    {rate.sell}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

@@ -42,9 +42,10 @@ export async function GET(request: NextRequest) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const currentDate = format(new Date(), 'dd/MM/yyyy');
-  const startDate = currentDate;
-  const endDate = currentDate;
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const startDate = format(yesterday, 'dd/MM/yyyy');
+  const endDate = format(new Date(), 'dd/MM/yyyy');
 
   try {
     const buyRates = await getExchangeRates(317, startDate, endDate);

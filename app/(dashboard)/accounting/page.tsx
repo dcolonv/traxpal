@@ -1,3 +1,3 @@
-export default function Example() {
+export default function AccountingPage() {
   return <>Accounting page</>;
 }
