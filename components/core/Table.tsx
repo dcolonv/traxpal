@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 interface TableProps {
   headers: string[];
   data: { [key: string]: string }[];
@@ -5,18 +7,26 @@ interface TableProps {
 }
 
 const Table: React.FC<TableProps> = ({ headers, data, onCellChange }) => {
+  const [editRow, setEditRow] = useState<number>();
   return (
-    <table className="min-w-full divide-y divide-gray-200">
-      <thead className="bg-gray-50">
+    <table className="min-w-full divide-y divide-gray-300">
+      <thead>
         <tr>
           {headers.map((header) => (
             <th
               key={header}
-              className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+              scope="col"
+              className="whitespace-nowrap py-3.5 pl-2 pr-3 text-left text-sm font-semibold text-gray-900"
             >
               {header}
             </th>
           ))}
+          <th
+            scope="col"
+            className="relative whitespace-nowrap py-3.5 pl-3 pr-4 sm:pr-0"
+          >
+            <span className="sr-only">Edit</span>
+          </th>
         </tr>
       </thead>
       <tbody className="divide-y divide-gray-200 bg-white">
@@ -25,17 +35,29 @@ const Table: React.FC<TableProps> = ({ headers, data, onCellChange }) => {
             {headers.map((header) => (
               <td
                 key={`${rowIndex}-${header}`}
-                className="whitespace-nowrap px-6 py-4"
+                className="whitespace-nowrap px-2 py-2 text-sm text-gray-500"
               >
-                <input
-                  value={row[header]}
-                  onChange={(e) =>
-                    onCellChange(rowIndex, header, e.target.value)
-                  }
-                  className="w-full"
-                />
+                {rowIndex === editRow ? (
+                  <input
+                    value={row[header.toLowerCase()]}
+                    onChange={(e) =>
+                      onCellChange(rowIndex, header, e.target.value)
+                    }
+                    className="w-full"
+                  />
+                ) : (
+                  <>{row[header.toLowerCase()]}</>
+                )}
               </td>
             ))}
+            <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500">
+              <button
+                className="text-indigo-600 hover:text-indigo-900"
+                onClick={() => setEditRow(rowIndex)}
+              >
+                Edit<span className="sr-only">, {rowIndex}</span>
+              </button>
+            </td>
           </tr>
         ))}
       </tbody>

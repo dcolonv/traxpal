@@ -21,10 +21,8 @@ export default async function DashboardLayout({
 
   return (
     <>
-      <div>
-        <NavigationFrame />
-        <div className="lg:pl-72">{children}</div>
-      </div>
+      <NavigationFrame />
+      <div className="h-full pt-16 lg:pl-72">{children}</div>
     </>
   );
 }

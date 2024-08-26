@@ -2,6 +2,7 @@ import {
   BanknotesIcon,
   BuildingOffice2Icon,
   ChartPieIcon,
+  CircleStackIcon,
   DocumentDuplicateIcon,
   DocumentTextIcon,
   GlobeAmericasIcon,
@@ -40,5 +41,6 @@ export const SIDEBAR_NAVIGATION = {
         },
       ],
     },
+    { name: 'Accounts', href: '/accounts', icon: CircleStackIcon },
   ],
 };

@@ -47,7 +47,8 @@ const systemPrompt2 = `You are a helpful assistant that can identify and extract
 - You will return the first transaction detail line
 - You will return the last transaction detail line
 - You will return the separator used in the text it can be , or ; or anyother you find.
-- Only respond with a JSON format: {header: headerLine, firstLine: first transaction, lastLine: last transaction line, separator: separator used on the text lines} and nothing else, avoid extra comments or explanation, I only want the json object to be parsed into a Javascript object.
+- You will return the texts of headers corresponding to Date, Reference or Document number, Description, Debit, and Credit
+- Only respond with a JSON format: {header: headerLine, firstLine: first transaction, lastLine: last transaction line, separator: separator used on the text lines, headers: {date: date header text, reference: reference or document number, description: description header text, debit: debit header text, credit: credit header text}} and nothing else, avoid extra comments or explanation, I only want the json object to be parsed into a Javascript object.
 `;
 
 function extractDataFromJsonResponse(response: string): ExtractedData | null {

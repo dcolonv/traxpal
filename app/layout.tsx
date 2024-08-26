@@ -23,6 +23,12 @@ const inter = Inter({
   variable: '--font-inter',
 });
 
+const fontSans = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-sans',
+});
+
 const chakra = Chakra_Petch({
   subsets: ['latin'],
   display: 'swap',
@@ -49,9 +55,10 @@ export default function RootLayout({
         inter.variable,
         lexend.variable,
         chakra.variable,
+        fontSans.variable,
       )}
     >
-      <body className="h-full bg-background text-foreground">{children}</body>
+      <body className="h-full text-foreground">{children}</body>
     </html>
   );
 }

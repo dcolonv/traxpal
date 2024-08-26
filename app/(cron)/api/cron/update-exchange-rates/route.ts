@@ -5,6 +5,8 @@ import { type NextRequest } from 'next/server';
 import { promisify } from 'util';
 import { parseString } from 'xml2js';
 
+export const maxDuration = 60;
+
 const bccrWsToken = process.env.BCCR_WS_TOKEN;
 const parseXml = promisify(parseString);
 
@@ -33,17 +35,13 @@ const getExchangeRates = async (
 };
 
 export async function GET(request: NextRequest) {
-  // The `/auth/callback` route is required for the server-side auth flow implemented
-  // by the SSR package. It exchanges an auth code for the user's session.
-  // https://supabase.com/docs/guides/auth/server-side/nextjs
-
   const authHeader = request.headers.get('authorization');
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return new Response('Unauthorized', { status: 401 });
   }
 
   const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
+  yesterday.setDate(yesterday.getDate() - 5);
   const startDate = format(yesterday, 'dd/MM/yyyy');
   const endDate = format(new Date(), 'dd/MM/yyyy');
 
@@ -56,7 +54,7 @@ export async function GET(request: NextRequest) {
     const supabase = createClient();
 
     // Store data in Supabase
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('exchange_rates')
       .upsert(exchangeRates, {
         onConflict: 'type,date',
@@ -71,6 +69,7 @@ export async function GET(request: NextRequest) {
     }
 
     return Response.json({
+      success: true,
       message: 'Exchange rates updated successfully',
     });
   } catch (error) {

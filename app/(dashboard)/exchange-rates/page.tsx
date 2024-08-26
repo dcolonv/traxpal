@@ -79,10 +79,11 @@ export default async function ExchangeRatesPage({
   }
 
   return (
-    <main className="py-8">
+    <main>
+      {/* Header with Stats*/}
       <div className="relative isolate overflow-hidden">
-        <header className="border-b border-b-gray-900/10 py-4">
-          <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-6 px-4 sm:flex-nowrap sm:px-6 lg:px-8">
+        <header className="border-b border-b-gray-900/10 border-t-gray-900/10 py-6">
+          <div className="mx-auto flex h-10 flex-wrap items-center gap-6 px-4 sm:flex-nowrap sm:px-6 lg:px-8">
             <h1 className="text-base font-semibold leading-7 text-gray-900">
               Exchange rates
             </h1>
@@ -100,47 +101,50 @@ export default async function ExchangeRatesPage({
           </div>
         </header>
       </div>
-      <div className="flow-root p-8">
-        <div className="inline-block min-w-full align-middle">
-          <table className="min-w-full divide-y divide-gray-300">
-            <thead>
-              <tr className="divide-x divide-gray-200">
-                <th
-                  scope="col"
-                  className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-                >
-                  Date
-                </th>
-                <th
-                  scope="col"
-                  className="whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-900"
-                >
-                  Buy
-                </th>
-                <th
-                  scope="col"
-                  className="whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-900"
-                >
-                  Sell
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 bg-white">
-              {rates.map((rate) => (
-                <tr key={rate.date} className="divide-x divide-gray-200">
-                  <td className="whitespace-nowrap py-2 pl-4 pr-3 text-sm text-gray-500 sm:pl-0">
-                    {formatDate(rate.date)}
-                  </td>
-                  <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500">
-                    {rate.buy}
-                  </td>
-                  <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500">
-                    {rate.sell}
-                  </td>
+      {/** Body */}
+      <div className="flex flex-col gap-10 py-10 xl:gap-6">
+        <div className="inline-block min-w-full px-6 align-middle lg:px-10">
+          <div className="overflow-hidden sm:mx-0 sm:rounded-lg">
+            <table className="min-w-full divide-y divide-gray-300">
+              <thead>
+                <tr className="divide-x divide-gray-200">
+                  <th
+                    scope="col"
+                    className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900"
+                  >
+                    Date
+                  </th>
+                  <th
+                    scope="col"
+                    className="whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-900"
+                  >
+                    Buy
+                  </th>
+                  <th
+                    scope="col"
+                    className="whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-900"
+                  >
+                    Sell
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200 bg-white">
+                {rates.map((rate) => (
+                  <tr key={rate.date} className="divide-x divide-gray-200">
+                    <td className="whitespace-nowrap py-2 pl-4 pr-3 text-sm text-gray-500">
+                      {formatDate(rate.date)}
+                    </td>
+                    <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500">
+                      {rate.buy}
+                    </td>
+                    <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500">
+                      {rate.sell}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </main>
