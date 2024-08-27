@@ -35,11 +35,10 @@ const getExchangeRates = async (
 };
 
 export async function GET(request: NextRequest) {
-  // const authHeader = request.headers.get('authorization');
-  // if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-  //   return new Response('Unauthorized', { status: 401 });
-  // }
-  console.log(new Date());
+  const authHeader = request.headers.get('authorization');
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return new Response('Unauthorized', { status: 401 });
+  }
 
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 5);
