@@ -39,6 +39,7 @@ export async function GET(request: NextRequest) {
   // if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
   //   return new Response('Unauthorized', { status: 401 });
   // }
+  console.log(new Date());
 
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 5);
