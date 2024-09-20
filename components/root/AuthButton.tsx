@@ -1,4 +1,4 @@
-import { signOut } from '@/app/(auth)/actions';
+import { signOut } from '@/actions/database/auth';
 import { createClient } from '@/utils/supabase/server';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';

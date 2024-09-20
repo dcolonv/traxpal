@@ -1,16 +1,16 @@
 'use client';
 
 import {
-  addAccount,
-  removeAccount,
-  updateAccount,
-} from '@/actions/database/accounts';
+  addCategory,
+  removeCategory,
+  updateCategory,
+} from '@/actions/database/categories';
 import {
-  addSubaccount,
-  removeSubaccount,
-  updateSubaccount,
-} from '@/actions/database/subaccounts';
-import { AccountType, SubaccountType } from '@/lib/types/accounts';
+  addSubcategory,
+  removeSubcategory,
+  updateSubcategory,
+} from '@/actions/database/subcategories';
+import { CategoryType, SubcategoryType } from '@/lib/types/categories';
 import {
   CheckIcon,
   ChevronLeftIcon,
@@ -20,6 +20,7 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
+import { useOrganization } from '../providers/OrganizationProvider';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,178 +36,194 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import EmptyState from './EmptyState';
 
-export default function AccountsController({
-  accounts,
+export default function CategoriesController({
+  categories,
 }: {
-  accounts: AccountType[];
+  categories: CategoryType[];
 }) {
-  const [displayedAccounts, setDisplayedAccounts] = useState<AccountType[]>([]);
-  const [selectedAccount, setSelectedAccount] = useState<AccountType>();
+  const { organization } = useOrganization();
+  const [displayedCategories, setDisplayedCategories] = useState<
+    CategoryType[]
+  >([]);
+  const [selectedCategory, setSelectedCategory] = useState<CategoryType>();
 
-  const [addingNewAccount, setAddingNewAccount] = useState(false);
-  const [addingNewSubaccount, setAddingNewSubaccount] = useState(false);
-  const [editingAccount, setEditingAccount] = useState<AccountType>();
-  const [editingSubaccount, setEditingSubaccount] = useState<SubaccountType>();
+  const [addingNewCategory, setAddingNewCategory] = useState(false);
+  const [addingNewSubcategory, setAddingNewSubcategory] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<CategoryType>();
+  const [editingSubcategory, setEditingSubcategory] =
+    useState<SubcategoryType>();
 
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    setDisplayedAccounts(accounts);
-  }, [accounts]);
+    if (categories && organization) {
+      const orgCategories = categories.filter((cat) => cat.organization_id);
+      setDisplayedCategories(orgCategories);
+    }
+  }, [organization, categories]);
 
-  const handleSaveNewAccount = async (formData: FormData) => {
-    const name = (formData.get('account') as string).trim();
-    if (name) {
+  const handleSaveNewCategory = async (formData: FormData) => {
+    const name = (formData.get('category') as string).trim();
+    if (name && organization) {
       setIsSaving(true);
-      const { account } = await addAccount({ name });
-      if (account) {
-        setDisplayedAccounts([account, ...displayedAccounts]);
+      const { category } = await addCategory({
+        name,
+        organization_id: organization.id,
+      });
+      if (category) {
+        setDisplayedCategories([category, ...displayedCategories]);
       }
-      setAddingNewAccount(false);
+      setAddingNewCategory(false);
       setIsSaving(false);
     }
   };
 
-  const handleSaveEditAccount = async (formData: FormData) => {
-    const name = (formData.get('account') as string).trim();
-    if (name && editingAccount) {
+  const handleSaveEditCategory = async (formData: FormData) => {
+    const name = (formData.get('category') as string).trim();
+    if (name && editingCategory) {
       setIsSaving(true);
-      const { account } = await updateAccount({ id: editingAccount.id, name });
-      if (account) {
-        const acctIdx = displayedAccounts.findIndex(
-          (acct) => acct.id === account.id,
+      const { category } = await updateCategory({
+        id: editingCategory.id,
+        name,
+      });
+      if (category) {
+        const catIdx = displayedCategories.findIndex(
+          (cat) => cat.id === category.id,
         );
-        const oldAccount = displayedAccounts[acctIdx];
-        setDisplayedAccounts([
-          ...displayedAccounts.slice(0, acctIdx),
-          { ...oldAccount, ...account },
-          ...displayedAccounts.slice(acctIdx + 1),
+        const oldCategory = displayedCategories[catIdx];
+        setDisplayedCategories([
+          ...displayedCategories.slice(0, catIdx),
+          { ...oldCategory, ...category },
+          ...displayedCategories.slice(catIdx + 1),
         ]);
-        if (selectedAccount?.id === account.id) {
-          setSelectedAccount({ ...oldAccount, ...account });
+        if (selectedCategory?.id === category.id) {
+          setSelectedCategory({ ...oldCategory, ...category });
         }
       }
-      setEditingAccount(undefined);
+      setEditingCategory(undefined);
       setIsSaving(false);
     }
   };
 
-  const handleDeleteAccount = async (id: string) => {
+  const handleDeleteCategory = async (id: string) => {
     if (id) {
       setIsSaving(true);
-      const { success } = await removeAccount({ id });
+      const { success } = await removeCategory({ id });
       if (success) {
-        const acctIdx = displayedAccounts.findIndex((acct) => acct.id === id);
-        setDisplayedAccounts([
-          ...displayedAccounts.slice(0, acctIdx),
-          ...displayedAccounts.slice(acctIdx + 1),
+        const catIdx = displayedCategories.findIndex((cat) => cat.id === id);
+        setDisplayedCategories([
+          ...displayedCategories.slice(0, catIdx),
+          ...displayedCategories.slice(catIdx + 1),
         ]);
-        if (selectedAccount?.id === id) {
-          setSelectedAccount(undefined);
+        if (selectedCategory?.id === id) {
+          setSelectedCategory(undefined);
         }
       }
-      setEditingAccount(undefined);
+      setEditingCategory(undefined);
       setIsSaving(false);
     }
   };
 
   const handleBack = () => {
-    setSelectedAccount(undefined);
-    setAddingNewSubaccount(false);
+    setSelectedCategory(undefined);
+    setAddingNewSubcategory(false);
   };
 
-  const handleSaveNewSubaccount = async (formData: FormData) => {
-    const name = (formData.get('subaccount') as string).trim();
+  const handleSaveNewSubcategory = async (formData: FormData) => {
+    const name = (formData.get('subcategory') as string).trim();
     if (name) {
       setIsSaving(true);
-      const { subaccount } = await addSubaccount({
-        account_id: selectedAccount?.id as string,
+      const { subcategory } = await addSubcategory({
+        category_id: selectedCategory?.id as string,
         name,
       });
 
-      if (subaccount) {
-        const acctIdx = displayedAccounts.findIndex(
-          (acct) => acct.id === selectedAccount?.id,
+      if (subcategory) {
+        const catIdx = displayedCategories.findIndex(
+          (cat) => cat.id === selectedCategory?.id,
         );
-        const account = displayedAccounts[acctIdx];
-        account.subaccounts = [subaccount, ...(account.subaccounts || [])];
-        setDisplayedAccounts([
-          ...displayedAccounts.slice(0, acctIdx),
-          account,
-          ...displayedAccounts.slice(acctIdx + 1),
+        const category = displayedCategories[catIdx];
+        category.subcategories = [
+          subcategory,
+          ...(category.subcategories || []),
+        ];
+        setDisplayedCategories([
+          ...displayedCategories.slice(0, catIdx),
+          category,
+          ...displayedCategories.slice(catIdx + 1),
         ]);
       }
 
-      setAddingNewSubaccount(false);
+      setAddingNewSubcategory(false);
       setIsSaving(false);
     }
   };
 
-  const handleSaveEditSubaccount = async (formData: FormData) => {
-    const name = (formData.get('subaccount') as string).trim();
-    if (name && editingSubaccount) {
+  const handleSaveEditSubcategory = async (formData: FormData) => {
+    const name = (formData.get('subcategory') as string).trim();
+    if (name && editingSubcategory) {
       setIsSaving(true);
-      const { subaccount } = await updateSubaccount({
-        id: editingSubaccount.id,
+      const { subcategory } = await updateSubcategory({
+        id: editingSubcategory.id,
         name,
       });
-      if (subaccount) {
-        const acctIdx = displayedAccounts.findIndex(
-          (acct) => acct.id === subaccount.account_id,
+      if (subcategory) {
+        const catIdx = displayedCategories.findIndex(
+          (cat) => cat.id === subcategory.category_id,
         );
-        const account = displayedAccounts[acctIdx];
-        if (account.subaccounts) {
-          const subacctIdx = account.subaccounts.findIndex(
-            (subacct) => subacct.id === subaccount.id,
+        const category = displayedCategories[catIdx];
+        if (category.subcategories) {
+          const subcatIdx = category.subcategories.findIndex(
+            (subcat) => subcat.id === subcategory.id,
           );
-          const editedAccount = {
-            ...account,
-            subaccounts: [
-              ...account.subaccounts.slice(0, subacctIdx),
-              subaccount,
-              ...account.subaccounts.slice(subacctIdx + 1),
+          const editedCategory = {
+            ...category,
+            subcategories: [
+              ...category.subcategories.slice(0, subcatIdx),
+              subcategory,
+              ...category.subcategories.slice(subcatIdx + 1),
             ],
           };
-          setDisplayedAccounts([
-            ...displayedAccounts.slice(0, acctIdx),
-            editedAccount,
-            ...displayedAccounts.slice(acctIdx + 1),
+          setDisplayedCategories([
+            ...displayedCategories.slice(0, catIdx),
+            editedCategory,
+            ...displayedCategories.slice(catIdx + 1),
           ]);
-          if (selectedAccount?.id === editedAccount.id) {
-            setSelectedAccount(editedAccount);
+          if (selectedCategory?.id === editedCategory.id) {
+            setSelectedCategory(editedCategory);
           }
         }
       }
-      setEditingSubaccount(undefined);
+      setEditingSubcategory(undefined);
       setIsSaving(false);
     }
   };
 
-  const handleDeleteSubaccount = async (id: string) => {
+  const handleDeleteSubcategory = async (id: string) => {
     if (id) {
       setIsSaving(true);
-      const { success } = await removeSubaccount({ id });
+      const { success } = await removeSubcategory({ id });
       if (success) {
-        const acctIdx = displayedAccounts.findIndex(
-          (acct) => acct.id === selectedAccount?.id,
+        const catIdx = displayedCategories.findIndex(
+          (cat) => cat.id === selectedCategory?.id,
         );
-        const account = displayedAccounts[acctIdx];
-        const editedAccount = {
-          ...account,
-          subaccounts: (account.subaccounts || []).filter(
-            (subacct) => subacct.id !== id,
+        const category = displayedCategories[catIdx];
+        const editedCategory = {
+          ...category,
+          subcategories: (category.subcategories || []).filter(
+            (subcat) => subcat.id !== id,
           ),
         };
-        setDisplayedAccounts([
-          ...displayedAccounts.slice(0, acctIdx),
-          editedAccount,
-          ...displayedAccounts.slice(acctIdx + 1),
+        setDisplayedCategories([
+          ...displayedCategories.slice(0, catIdx),
+          editedCategory,
+          ...displayedCategories.slice(catIdx + 1),
         ]);
-        if (selectedAccount?.id === editedAccount.id) {
-          setSelectedAccount(editedAccount);
+        if (selectedCategory?.id === editedCategory.id) {
+          setSelectedCategory(editedCategory);
         }
       }
-      setEditingSubaccount(undefined);
+      setEditingSubcategory(undefined);
       setIsSaving(false);
     }
   };
@@ -215,7 +232,7 @@ export default function AccountsController({
     <div className="flex h-full overflow-hidden">
       <div
         className={`relative overflow-y-auto pb-10 transition-all duration-300 ease-in-out ${
-          selectedAccount
+          selectedCategory
             ? 'w-[0%] border-r border-black/5 lg:w-[50%]'
             : 'w-full'
         }`}
@@ -223,26 +240,26 @@ export default function AccountsController({
         <main>
           <header className="flex items-center justify-between border-b border-black/5 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
             <h1 className="text-base font-semibold leading-7 text-black">
-              Accounts
+              Categories
             </h1>
 
-            <Button onClick={() => setAddingNewAccount(true)}>
+            <Button onClick={() => setAddingNewCategory(true)}>
               <PlusIcon aria-hidden="true" className="mr-2 h-4 w-4" />
-              New <span className="hidden md:block">&nbsp;Account</span>
+              New <span className="hidden md:block">&nbsp;Category</span>
             </Button>
           </header>
 
-          {/* Accounts list */}
+          {/* Categories list */}
           <ul role="list" className="divide-y divide-black/5">
-            {addingNewAccount && (
-              <form action={handleSaveNewAccount}>
+            {addingNewCategory && (
+              <form action={handleSaveNewCategory}>
                 <li className="relative flex items-center space-x-4 px-4 py-4 sm:px-6 lg:px-8">
                   <div className="min-w-0 flex-auto">
                     <div className="flex items-center gap-x-3">
                       <Input
-                        id="account"
-                        name="account"
-                        placeholder="New account"
+                        id="category"
+                        name="category"
+                        placeholder="New category"
                         disabled={isSaving}
                         required
                       />
@@ -262,7 +279,7 @@ export default function AccountsController({
                       variant="outline"
                       size="icon"
                       disabled={isSaving}
-                      onClick={() => setAddingNewAccount(false)}
+                      onClick={() => setAddingNewCategory(false)}
                     >
                       <XMarkIcon aria-hidden="true" className="h-4 w-4" />
                     </Button>
@@ -270,26 +287,26 @@ export default function AccountsController({
                 </li>
               </form>
             )}
-            {!displayedAccounts?.length && !addingNewAccount ? (
+            {!displayedCategories?.length && !addingNewCategory ? (
               <EmptyState
-                title="No accounts yet"
+                title="No categories yet"
                 subtitle="Get started by creating a new one."
-                action="New Account"
-                onClick={() => setAddingNewAccount(true)}
+                action="New Category"
+                onClick={() => setAddingNewCategory(true)}
               />
             ) : (
-              displayedAccounts.map((account) => {
-                if (account.id === editingAccount?.id) {
+              displayedCategories.map((category) => {
+                if (category.id === editingCategory?.id) {
                   return (
-                    <form key={account.id} action={handleSaveEditAccount}>
+                    <form key={category.id} action={handleSaveEditCategory}>
                       <li className="relative flex items-center space-x-4 px-4 py-4 sm:px-6 lg:px-8">
                         <div className="min-w-0 flex-auto">
                           <div className="flex items-center gap-x-3">
                             <Input
-                              id="account"
-                              name="account"
-                              placeholder="Edit account"
-                              defaultValue={account.name}
+                              id="category"
+                              name="category"
+                              placeholder="Edit category"
+                              defaultValue={category.name}
                               disabled={isSaving}
                               required
                             />
@@ -309,7 +326,7 @@ export default function AccountsController({
                             variant="outline"
                             size="icon"
                             disabled={isSaving}
-                            onClick={() => setEditingAccount(undefined)}
+                            onClick={() => setEditingCategory(undefined)}
                           >
                             <XMarkIcon aria-hidden="true" className="h-4 w-4" />
                           </Button>
@@ -333,15 +350,15 @@ export default function AccountsController({
                                 </AlertDialogTitle>
                                 <AlertDialogDescription>
                                   This action cannot be undone. This will
-                                  permanently delete your account and remove all
-                                  subaccounts.
+                                  permanently delete your category and remove
+                                  all subcategories.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction
                                   onClick={() =>
-                                    handleDeleteAccount(account.id)
+                                    handleDeleteCategory(category.id)
                                   }
                                 >
                                   Continue
@@ -356,29 +373,29 @@ export default function AccountsController({
                 }
                 return (
                   <li
-                    key={account.id}
+                    key={category.id}
                     className="relative flex items-center space-x-4 px-4 py-4 sm:px-6 lg:px-8"
                   >
                     <div className="min-w-0 flex-auto">
                       <div className="flex items-center gap-x-3">
                         <h2 className="min-w-0 text-sm leading-6 text-gray-600">
-                          <span className="truncate">{account.name}</span>
+                          <span className="truncate">{category.name}</span>
                         </h2>
                       </div>
                     </div>
                     <div className="flex flex-row items-center gap-4">
                       <Button
                         variant="outline"
-                        onClick={() => setEditingAccount(account)}
+                        onClick={() => setEditingCategory(category)}
                       >
                         Edit
                       </Button>
                       <Button
                         variant="ghost"
-                        onClick={() => setSelectedAccount(account)}
+                        onClick={() => setSelectedCategory(category)}
                       >
                         <span className="mr-2 hidden md:block">
-                          {account.subaccounts?.length || 0} Subaccounts
+                          {category.subcategories?.length || 0} Subcategories
                         </span>
                         <ChevronRightIcon className="h-4 w-4" />
                       </Button>
@@ -393,10 +410,10 @@ export default function AccountsController({
 
       <div
         className={`relative overflow-y-auto bg-white transition-all duration-300 ease-in-out ${
-          selectedAccount ? 'w-[100%] opacity-100 lg:w-[50%]' : 'w-0 opacity-0'
+          selectedCategory ? 'w-[100%] opacity-100 lg:w-[50%]' : 'w-0 opacity-0'
         }`}
       >
-        {selectedAccount && (
+        {selectedCategory && (
           <aside>
             <header className="flex items-center justify-between border-b border-black/5 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
               <Button variant="ghost" onClick={handleBack}>
@@ -405,25 +422,25 @@ export default function AccountsController({
               </Button>
               <div className="flex flex-col items-center">
                 <h2 className="text-base font-semibold leading-7 text-black">
-                  {selectedAccount.name}
+                  {selectedCategory.name}
                 </h2>
-                <p className="mt-1 text-sm text-gray-500">Subaccounts</p>
+                <p className="mt-1 text-sm text-gray-500">Subcategories</p>
               </div>
-              <Button onClick={() => setAddingNewSubaccount(true)}>
+              <Button onClick={() => setAddingNewSubcategory(true)}>
                 <PlusIcon aria-hidden="true" className="mr-2 h-4 w-4" />
                 New
               </Button>
             </header>
             <ul role="list" className="divide-y divide-black/5">
-              {addingNewSubaccount && (
-                <form action={handleSaveNewSubaccount}>
+              {addingNewSubcategory && (
+                <form action={handleSaveNewSubcategory}>
                   <li className="relative flex items-center space-x-4 px-4 py-4 sm:px-6 lg:px-8">
                     <div className="min-w-0 flex-auto">
                       <div className="flex items-center gap-x-3">
                         <Input
-                          id="subaccount"
-                          name="subaccount"
-                          placeholder="New subaccount"
+                          id="subcategory"
+                          name="subcategory"
+                          placeholder="New subcategory"
                           className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                           disabled={isSaving}
                         />
@@ -444,7 +461,7 @@ export default function AccountsController({
                         variant="outline"
                         size="icon"
                         disabled={isSaving}
-                        onClick={() => setAddingNewSubaccount(false)}
+                        onClick={() => setAddingNewSubcategory(false)}
                       >
                         <XMarkIcon aria-hidden="true" className="h-4 w-4" />
                       </Button>
@@ -452,29 +469,29 @@ export default function AccountsController({
                   </li>
                 </form>
               )}
-              {!selectedAccount.subaccounts?.length ? (
+              {!selectedCategory.subcategories?.length ? (
                 <EmptyState
-                  title={`No subaccounts yet`}
-                  subtitle="Create a new subaccount."
-                  action="New subaccount"
-                  onClick={() => setAddingNewSubaccount(true)}
+                  title={`No subcategories yet`}
+                  subtitle="Create a new subcategory."
+                  action="New subcategory"
+                  onClick={() => setAddingNewSubcategory(true)}
                 />
               ) : (
-                selectedAccount.subaccounts.map((subaccount) => {
-                  if (subaccount.id === editingSubaccount?.id) {
+                selectedCategory.subcategories.map((subcategory) => {
+                  if (subcategory.id === editingSubcategory?.id) {
                     return (
                       <form
-                        key={subaccount.id}
-                        action={handleSaveEditSubaccount}
+                        key={subcategory.id}
+                        action={handleSaveEditSubcategory}
                       >
                         <li className="relative flex items-center space-x-4 px-4 py-4 sm:px-6 lg:px-8">
                           <div className="min-w-0 flex-auto">
                             <div className="flex items-center gap-x-3">
                               <Input
-                                id="subaccount"
-                                name="subaccount"
-                                placeholder="Edit subaccount"
-                                defaultValue={subaccount.name}
+                                id="subcategory"
+                                name="subcategory"
+                                placeholder="Edit subcategory"
+                                defaultValue={subcategory.name}
                                 disabled={isSaving}
                                 required
                               />
@@ -497,7 +514,7 @@ export default function AccountsController({
                               variant="outline"
                               size="icon"
                               disabled={isSaving}
-                              onClick={() => setEditingSubaccount(undefined)}
+                              onClick={() => setEditingSubcategory(undefined)}
                             >
                               <XMarkIcon
                                 aria-hidden="true"
@@ -524,14 +541,14 @@ export default function AccountsController({
                                   </AlertDialogTitle>
                                   <AlertDialogDescription>
                                     This action cannot be undone. This will
-                                    permanently delete your subaccount.
+                                    permanently delete your subcategory.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                                   <AlertDialogAction
                                     onClick={() =>
-                                      handleDeleteSubaccount(subaccount.id)
+                                      handleDeleteSubcategory(subcategory.id)
                                     }
                                   >
                                     Continue
@@ -546,20 +563,20 @@ export default function AccountsController({
                   }
                   return (
                     <li
-                      key={subaccount.id}
+                      key={subcategory.id}
                       className="relative flex items-center space-x-4 px-4 py-4 sm:px-6 lg:px-8"
                     >
                       <div className="min-w-0 flex-auto">
                         <div className="flex items-center gap-x-3">
                           <h3 className="flex-auto truncate text-sm font-semibold leading-6 text-black">
-                            {subaccount.name}
+                            {subcategory.name}
                           </h3>
                         </div>
                       </div>
                       <div className="flex flex-row items-center gap-4">
                         <Button
                           variant="outline"
-                          onClick={() => setEditingSubaccount(subaccount)}
+                          onClick={() => setEditingSubcategory(subcategory)}
                         >
                           Edit
                         </Button>

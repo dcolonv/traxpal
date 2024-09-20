@@ -1,80 +1,124 @@
 'use client';
 
-import { Button } from '@/components/core/Button';
-
-import Table from '@/components/core/Table';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { extractFileDetailLinesClaude } from '@/lib/ai/bank_details';
-import { createClient } from '@/utils/supabase/client';
+import { dynamicFileParser } from '@/utils/file-processing';
 import { DocumentTextIcon } from '@heroicons/react/24/outline';
-import { useRouter } from 'next/navigation';
-
 import React, { useRef, useState } from 'react';
+import StatementTable from './StatementTable';
 
-type CSVData = {
+type DataType = {
   [key: string]: string;
 };
 
+type InformationType = {
+  bankAccount: string;
+  bankName: string;
+  currency: string;
+};
+
 export default function Home() {
-  const [csvData, setCSVData] = useState<CSVData[]>([]);
+  const [information, setInformation] = useState<InformationType>();
+  const [data, setData] = useState<DataType[]>([]);
   const [isDragging, setIsDragging] = useState(false);
-  const router = useRouter();
-  const supabase = createClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleClear = () => {
-    setCSVData([]);
+    setData([]);
   };
 
-  const handleFile = async (file: File) => {
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const content = e.target?.result as string;
-      const lines = content.split('\n');
+  const processFileContent = async (
+    content: string[],
+  ): Promise<{ data: DataType[]; information: InformationType }> => {
+    const {
+      header,
+      firstLine,
+      lastLine,
+      separator,
+      headerSeparator,
+      headers,
+      information: info,
+    }: any = await extractFileDetailLinesClaude(content);
 
-      const { header, firstLine, lastLine, separator, headers }: any =
-        await extractFileDetailLinesClaude(lines);
+    console.log({
+      header,
+      firstLine,
+      lastLine,
+      separator,
+      headers,
+      info,
+    });
+    const headerIndex = content.findIndex((line) =>
+      line.trim().startsWith(header.trim()),
+    );
+    const startIndex = content.findIndex((line) =>
+      line.trim().startsWith(firstLine.trim()),
+    );
+    const endIndex = content.findIndex((line) =>
+      line.trim().startsWith(lastLine.trim()),
+    );
 
-      const headerIndex = lines.findIndex(
-        (line) => line.trim() === header.trim(),
+    console.log({ headerIndex, startIndex, endIndex });
+
+    const flippedHeaders = Object.keys(headers).reduce((obj, h) => {
+      return { ...obj, [headers[h]]: h };
+    }, {} as any);
+
+    if (startIndex === -1 || endIndex === -1) {
+      console.error(
+        "Couldn't find the correct start or end of bank movement details",
       );
-      const startIndex = lines.findIndex(
-        (line) => line.trim() === firstLine.trim(),
+      throw new Error(
+        "Couldn't find the correct start or end of bank movement details",
       );
-      const endIndex = lines.findIndex(
-        (line) => line.trim() === lastLine.trim(),
-      );
-
-      const flippedHeaders = Object.keys(headers).reduce((obj, h) => {
-        return { ...obj, [headers[h]]: h };
-      }, {} as any);
-
-      if (startIndex === -1 || endIndex === -1) {
-        console.error(
-          "Couldn't find the correct start or end of bank movement details",
-        );
-        return;
-      }
-
-      const fileHeaders = lines[headerIndex]
-        .split(separator)
+    }
+    let fileHeaders: string[] = [];
+    if (headerSeparator !== separator) {
+      fileHeaders = content[headerIndex]
+        .split(headerSeparator)
+        .filter((header) => !!header.trim())
         .map((header) => header.trim());
+    } else {
+      fileHeaders = content[headerIndex]
+        .split(headerSeparator)
+        .map((header) => header.trim());
+    }
 
-      console.log({ fileHeaders, flippedHeaders });
-      const data = lines
+    console.log({ fileHeaders });
+    return {
+      data: content
         .slice(startIndex, endIndex + 1)
         .map((line) => {
           const values = line.split(separator);
+          console.log({ values });
           return fileHeaders.reduce((obj, fileHeader, index) => {
             if (flippedHeaders[fileHeader]) {
               obj[flippedHeaders[fileHeader]] = values[index]?.trim() || '';
             }
             return obj;
-          }, {} as CSVData);
+          }, {} as DataType);
         })
-        .filter((row) => Object.values(row).some((value) => value !== ''));
-      setCSVData(data);
+        .filter((row) => Object.values(row).some((value) => value !== '')),
+      information: info,
     };
-    reader.readAsText(file);
+  };
+
+  const handleFile = async (file: File) => {
+    try {
+      const result = await dynamicFileParser(file);
+
+      // Process the content using Claude
+      const processedData = await processFileContent(result);
+
+      // TODO: Apply rules to set account, subaccount, and client/provider
+
+      setData(processedData.data);
+      setInformation(processedData.information);
+    } catch (error) {
+      console.error('Error processing file:', error);
+      // Handle error (e.g., show error message to user)
+    }
   };
 
   const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
@@ -118,21 +162,21 @@ export default function Home() {
     value: string,
   ) => {
     console.log('here', { rowIndex, header, value });
-    const newData = [...csvData];
+    const newData = [...data];
     console.log(newData);
     newData[rowIndex][header.toLowerCase()] = value;
-    setCSVData(newData);
+    setData(newData);
   };
 
   const handleSave = async () => {
-    try {
-      const { data, error } = await supabase.from('csv_data').insert(csvData);
-      if (error) throw error;
-      console.log('Data saved successfully', data);
-      router.push('/success');
-    } catch (error) {
-      console.error('Error saving data', error);
-    }
+    // try {
+    //   const { data, error } = await supabase.from('csv_data').insert(data);
+    //   if (error) throw error;
+    //   console.log('Data saved successfully', data);
+    //   router.push('/success');
+    // } catch (error) {
+    //   console.error('Error saving data', error);
+    // }
   };
 
   return (
@@ -146,7 +190,7 @@ export default function Home() {
           </div>
         </header>
       </div>
-      {!csvData.length && (
+      {!data.length ? (
         <div className="col-span-full mx-auto max-w-7xl px-6 pt-6 lg:px-8">
           <div
             onDragEnter={handleDragEnter}
@@ -175,7 +219,7 @@ export default function Home() {
                     name="file-upload"
                     type="file"
                     className="sr-only"
-                    accept=".csv, .xls"
+                    accept=".csv,.xls,.xlsx,.pdf"
                     onChange={handleFileUpload}
                     ref={fileInputRef}
                   />
@@ -183,18 +227,46 @@ export default function Home() {
                 <p className="pl-1">or drag and drop</p>
               </div>
               <p className="text-xs leading-5 text-gray-600">
-                CSV, XLS up to 1MB
+                CSV, XLS, XLSX, PDF up to 1MB
               </p>
             </div>
           </div>
         </div>
-      )}
-      {csvData.length > 0 && (
+      ) : (
         <div className="flex flex-col gap-8 px-6 pt-6 lg:px-8">
+          <dl className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-3">
+            <div className="sm:col-span-1 sm:px-0">
+              <dt className="text-sm font-medium leading-6 text-gray-900">
+                Bank name
+              </dt>
+              <dd className="mt-1 text-sm leading-6 text-gray-700 sm:mt-2">
+                {information?.bankName || <Input placeholder="Bank name" />}
+              </dd>
+            </div>
+            <div className="sm:col-span-1 sm:px-0">
+              <dt className="text-sm font-medium leading-6 text-gray-900">
+                Statement account
+              </dt>
+              <dd className="mt-1 text-sm leading-6 text-gray-700 sm:mt-2">
+                {information?.bankAccount || (
+                  <Input placeholder="Bank account" />
+                )}
+              </dd>
+            </div>
+            <div className="sm:col-span-1 sm:px-0">
+              <dt className="text-sm font-medium leading-6 text-gray-900">
+                Currency
+              </dt>
+              <dd className="mt-1 text-sm leading-6 text-gray-700 sm:mt-2">
+                {information?.currency || <Input placeholder="Currency" />}
+              </dd>
+            </div>
+          </dl>
+
           <div className="flow-root">
             <div className="overflow-x-auto">
               <div className="inline-block min-w-full align-middle">
-                <Table
+                <StatementTable
                   headers={[
                     'Date',
                     'Reference',
@@ -206,7 +278,7 @@ export default function Home() {
                     'Client/Provider',
                     'Detail',
                   ]}
-                  data={csvData}
+                  data={data}
                   onCellChange={handleCellChange}
                 />
               </div>

@@ -17,7 +17,7 @@ export const SIDEBAR_NAVIGATION = {
     },
     { name: 'Companies', href: '#', icon: BuildingOffice2Icon },
     {
-      name: 'Bank Accounts',
+      name: 'Bank Categories',
       href: '#',
       icon: DocumentTextIcon,
     },
@@ -41,6 +41,6 @@ export const SIDEBAR_NAVIGATION = {
         },
       ],
     },
-    { name: 'Accounts', href: '/accounts', icon: CircleStackIcon },
+    { name: 'Categories', href: '/categories', icon: CircleStackIcon },
   ],
 };

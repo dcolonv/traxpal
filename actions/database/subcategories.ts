@@ -2,28 +2,28 @@
 
 import { createClient } from '@/utils/supabase/server';
 
-export async function addSubaccount({
-  account_id,
+export async function addSubcategory({
+  category_id,
   name,
 }: {
-  account_id: string;
+  category_id: string;
   name: string;
 }) {
   const supabase = createClient();
 
   const { data, error } = await supabase
-    .from('subaccounts')
-    .insert({ name, account_id })
+    .from('subcategories')
+    .insert({ name, category_id })
     .select();
 
   if (error) {
     return { success: false, error };
   }
 
-  return { success: true, subaccount: data[0] };
+  return { success: true, subcategory: data[0] };
 }
 
-export async function updateSubaccount({
+export async function updateSubcategory({
   id,
   name,
 }: {
@@ -33,7 +33,7 @@ export async function updateSubaccount({
   const supabase = createClient();
 
   const { data, error } = await supabase
-    .from('subaccounts')
+    .from('subcategories')
     .update({ name })
     .eq('id', id)
     .select();
@@ -43,14 +43,14 @@ export async function updateSubaccount({
     return { success: false, error };
   }
 
-  return { success: true, subaccount: data[0] };
+  return { success: true, subcategory: data[0] };
 }
 
-export async function removeSubaccount({ id }: { id: string }) {
+export async function removeSubcategory({ id }: { id: string }) {
   const supabase = createClient();
 
   const { error } = await supabase
-    .from('subaccounts')
+    .from('subcategories')
     .update({ status: 'removed' })
     .eq('id', id);
 

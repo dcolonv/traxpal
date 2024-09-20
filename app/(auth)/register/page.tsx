@@ -1,8 +1,8 @@
+import { signUp } from '@/actions/database/auth';
 import { TextField } from '@/components/core/Fields';
 import { SubmitButton } from '@/components/core/SubmitButton';
 import { type Metadata } from 'next';
 import Link from 'next/link';
-import { signUp } from '../actions';
 
 export const metadata: Metadata = {
   title: 'Sign Up',
