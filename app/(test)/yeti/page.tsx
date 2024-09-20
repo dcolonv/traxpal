@@ -1,5 +1,5 @@
 'use client';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -15,14 +15,32 @@ export default function MicrophoneRecorder() {
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const audioChunks = useRef<Blob[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, []);
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
+      streamRef.current = stream;
       mediaRecorder.current = new MediaRecorder(stream);
 
       mediaRecorder.current.ondataavailable = (event: BlobEvent) => {
-        audioChunks.current.push(event.data);
+        if (event.data.size > 0) {
+          audioChunks.current.push(event.data);
+        }
       };
 
       mediaRecorder.current.onstop = async () => {
@@ -30,12 +48,10 @@ export default function MicrophoneRecorder() {
         setRecordingComplete(true);
 
         try {
-          // Convert blob to base64
           const reader = new FileReader();
           reader.readAsDataURL(audioBlob);
           reader.onloadend = async function () {
             const base64Audio = reader.result as string;
-            // Remove the data URL prefix
             const base64Data = base64Audio.split(',')[1];
 
             const result = await extractAudioTranscription(base64Data);
@@ -66,6 +82,9 @@ export default function MicrophoneRecorder() {
   const stopRecording = () => {
     if (mediaRecorder.current && isRecording) {
       mediaRecorder.current.stop();
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+      }
       setIsRecording(false);
     }
   };
@@ -89,7 +108,7 @@ export default function MicrophoneRecorder() {
         />
       </Button>
       <p className="mt-4 text-lg font-semibold">
-        {isRecording ? 'Recording...' : 'Press and hold to record'}
+        {isRecording ? 'Recording...' : 'Tap to start/stop recording'}
       </p>
       {recordingComplete && !answer && !error && (
         <Alert className="mt-4 max-w-sm">
