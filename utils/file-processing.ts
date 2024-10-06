@@ -70,7 +70,6 @@ async function detectFileType(file: File): Promise<string> {
 export async function dynamicFileParser(file: File): Promise<string[]> {
   const fileType = await detectFileType(file);
 
-  console.log({ fileType });
   switch (fileType) {
     case 'excel':
       return parseExcel(file);

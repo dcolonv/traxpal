@@ -5,6 +5,7 @@ import {
 } from '@headlessui/react';
 import { ChevronRightIcon } from '@heroicons/react/20/solid';
 import clsx from 'clsx';
+import Link from 'next/link';
 import { ForwardRefExoticComponent, RefAttributes, SVGProps } from 'react';
 
 type NavigationItemType = {
@@ -42,7 +43,7 @@ export function NavigationItem({
   return (
     <li>
       {!item.children ? (
-        <a
+        <Link
           href={item.href || ''}
           className={clsx(
             current
@@ -61,7 +62,7 @@ export function NavigationItem({
             )}
           />
           {item.name}
-        </a>
+        </Link>
       ) : (
         <Disclosure as="div" defaultOpen={current}>
           <DisclosureButton
@@ -88,7 +89,7 @@ export function NavigationItem({
                 <li key={child.name}>
                   {/* 44px */}
                   <DisclosureButton
-                    as="a"
+                    as={Link}
                     href={child.href}
                     className={clsx(
                       child.subitem === subItem

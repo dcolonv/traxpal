@@ -6,7 +6,7 @@ export async function addSubcategory({
   category_id,
   name,
 }: {
-  category_id: string;
+  category_id: number;
   name: string;
 }) {
   const supabase = createClient();
@@ -27,7 +27,7 @@ export async function updateSubcategory({
   id,
   name,
 }: {
-  id: string;
+  id: number;
   name: string;
 }) {
   const supabase = createClient();
@@ -46,7 +46,7 @@ export async function updateSubcategory({
   return { success: true, subcategory: data[0] };
 }
 
-export async function removeSubcategory({ id }: { id: string }) {
+export async function removeSubcategory({ id }: { id: number }) {
   const supabase = createClient();
 
   const { error } = await supabase

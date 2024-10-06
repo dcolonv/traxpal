@@ -1,13 +1,13 @@
 'use server';
 
-import { type CategoryType } from '@/lib/types/categories';
+import { ClientProviderType } from '@/lib/types/client_providers';
 import { createClient } from '@/utils/supabase/server';
 
-export async function fetchCategories(
+export async function fetchClientsProviders(
   page: number = 1,
   itemsPerPage: number = 25,
 ): Promise<{
-  categories: CategoryType[];
+  clients_providers: ClientProviderType[];
   count: number | null;
   pages: number;
   error?: boolean;
@@ -18,68 +18,76 @@ export async function fetchCategories(
   const end = start + itemsPerPage - 1;
 
   const {
-    data: categories,
+    data: clients_providers,
     error,
     count,
   } = await supabase
-    .from('categories')
-    .select('*, subcategories(*)', { count: 'exact' })
+    .from('clients_providers')
+    .select('*', { count: 'exact' })
     .eq('status', 'active')
-    .eq('subcategories.status', 'active')
     .range(start, end)
-    .order('id', { referencedTable: 'subcategories', ascending: true })
-    .order('id', { ascending: false });
+    .order('id', { ascending: true });
 
   if (error) {
-    console.error('Error fetching categories:', error);
+    console.error('Error fetching clients and providers:', error);
     return {
-      categories: [],
+      clients_providers: [],
       count: 0,
       pages: 0,
       error: true,
     };
   }
 
-  return { categories, count, pages: Math.ceil((count || 0) / itemsPerPage) };
+  return {
+    clients_providers,
+    count,
+    pages: Math.ceil((count || 0) / itemsPerPage),
+  };
 }
 
-export async function fetchAllCategories(): Promise<{
-  categories: CategoryType[];
+export async function fetchAllClientsProviders(): Promise<{
+  clients_providers: ClientProviderType[];
   error?: boolean;
 }> {
   const supabase = createClient();
 
-  const { data: categories, error } = await supabase
-    .from('categories')
-    .select('*, subcategories(*)')
+  const {
+    data: clients_providers,
+    error,
+    count,
+  } = await supabase
+    .from('clients_providers')
+    .select('*')
     .eq('status', 'active')
-    .eq('subcategories.status', 'active')
-    .order('id', { referencedTable: 'subcategories', ascending: true })
-    .order('id', { ascending: false });
+    .order('id', { ascending: true });
 
   if (error) {
-    console.error('Error fetching all categories:', error);
+    console.error('Error fetching all clients and providers:', error);
     return {
-      categories: [],
+      clients_providers: [],
       error: true,
     };
   }
 
-  return { categories };
+  return {
+    clients_providers,
+  };
 }
 
-export async function addCategory({
+export async function addClientProvider({
   name,
+  type,
   organization_id,
 }: {
   name: string;
+  type: string;
   organization_id: string;
 }) {
   const supabase = createClient();
 
   const { data, error } = await supabase
-    .from('categories')
-    .insert({ name, organization_id })
+    .from('clients_providers')
+    .insert({ name, type, organization_id })
     .select();
 
   if (error) {
@@ -87,21 +95,23 @@ export async function addCategory({
     return { success: false, error };
   }
 
-  return { success: true, category: data[0] };
+  return { success: true, client_provider: data[0] };
 }
 
-export async function updateCategory({
+export async function updateClientProvider({
   id,
   name,
+  type,
 }: {
   id: number;
   name: string;
+  type: string;
 }) {
   const supabase = createClient();
 
   const { data, error } = await supabase
-    .from('categories')
-    .update({ name })
+    .from('clients_providers')
+    .update({ name, type })
     .eq('id', id)
     .select();
 
@@ -110,14 +120,14 @@ export async function updateCategory({
     return { success: false, error };
   }
 
-  return { success: true, category: data[0] };
+  return { success: true, client_provider: data[0] };
 }
 
-export async function removeCategory({ id }: { id: number }) {
+export async function removeClientProvider({ id }: { id: number }) {
   const supabase = createClient();
 
   const { error } = await supabase
-    .from('categories')
+    .from('clients_providers')
     .update({ status: 'removed' })
     .eq('id', id);
 

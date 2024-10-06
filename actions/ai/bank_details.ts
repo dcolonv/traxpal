@@ -138,6 +138,5 @@ export async function extractFileDetailLinesClaude(fileContent: string[]) {
     ],
   });
 
-  console.log(result.text);
   return JSON.parse(result.text);
 }

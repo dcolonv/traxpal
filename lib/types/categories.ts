@@ -1,7 +1,7 @@
 import { StatusEnum } from './enums';
 
 export type SubcategoryType = {
-  id: string;
+  id: number;
   category_id: string;
   name: string;
   status: StatusEnum;
@@ -9,7 +9,7 @@ export type SubcategoryType = {
 };
 
 export type CategoryType = {
-  id: string;
+  id: number;
   name: string;
   status: StatusEnum;
   organization_id: string;

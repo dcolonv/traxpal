@@ -53,7 +53,7 @@ export function MobileNavigation() {
               </div>
             </TransitionChild>
             {/* Sidebar component, swap this element with another sidebar if you like */}
-            <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-3 pb-4">
+            <div className="flex w-64 grow flex-col gap-y-5 overflow-y-auto bg-white px-3 pb-4">
               <Sidebar />
             </div>
           </DialogPanel>

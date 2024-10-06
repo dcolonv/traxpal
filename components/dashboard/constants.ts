@@ -2,10 +2,12 @@ import {
   BanknotesIcon,
   BuildingOffice2Icon,
   ChartPieIcon,
-  CircleStackIcon,
   DocumentDuplicateIcon,
   DocumentTextIcon,
   GlobeAmericasIcon,
+  ListBulletIcon,
+  SwatchIcon,
+  UsersIcon,
 } from '@heroicons/react/24/outline';
 
 export const SIDEBAR_NAVIGATION = {
@@ -36,11 +38,21 @@ export const SIDEBAR_NAVIGATION = {
       children: [
         {
           name: 'USD - CRC',
-          href: '/exchange-rates?type=USD-CRC',
+          href: '/exchange-rates/USD-CRC/1',
           subitem: 'USD-CRC',
         },
       ],
     },
-    { name: 'Categories', href: '/categories', icon: CircleStackIcon },
+    {
+      name: 'Clients and Providers',
+      href: '/client-providers/1',
+      icon: UsersIcon,
+    },
+    { name: 'Categories', href: '/categories/1', icon: ListBulletIcon },
+    {
+      name: 'Categorization Rules',
+      href: '/categorization-rules/1',
+      icon: SwatchIcon,
+    },
   ],
 };

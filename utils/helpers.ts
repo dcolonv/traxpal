@@ -1,3 +1,5 @@
+import { format, parseISO } from 'date-fns';
+
 interface Rate {
   type: string;
   date: string;
@@ -27,4 +29,21 @@ export function mergeExchangeRates(
       sell: sellRate,
     };
   });
+}
+
+export function formatDateLiteral(dateString: string) {
+  const date = parseISO(dateString);
+  return format(date, 'PPP');
+}
+
+export function getPaginationFactorsArray(n: number): number[] {
+  if (n <= 0) {
+    return [];
+  } else if (n === 1) {
+    return [0];
+  } else if (n === 2) {
+    return [1, 0];
+  } else {
+    return [2, 1, 0];
+  }
 }

@@ -2,7 +2,6 @@ import { BellIcon } from '@heroicons/react/24/outline';
 
 import AuthButton from '../root/AuthButton';
 import { MobileNavigation } from './MobileNavitation';
-import OrganizationSelector from './OrganizationSelector';
 import { Sidebar } from './Sidebar';
 
 export function NavigationFrame() {
@@ -18,9 +17,7 @@ export function NavigationFrame() {
         </div>
 
         {/** Center nav */}
-        <div className="flex items-center gap-x-4 p-0 sm:gap-x-6 lg:pl-72">
-          <OrganizationSelector />
-        </div>
+        <div className="flex items-center gap-x-4 p-0 sm:gap-x-6 lg:pl-72"></div>
 
         {/** Right nav */}
         <div className="flex items-center gap-x-4 sm:gap-x-6">
