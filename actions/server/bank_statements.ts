@@ -3,18 +3,19 @@
 import { CategorizationRuleType } from '@/lib/types/categorization_rules';
 import { RuleTypeEnum } from '@/lib/types/enums';
 import {
-  BankTransactionType,
   StatementHeaderType,
   StatementInformationType,
+  StatementTransactionType,
   StatementType,
 } from '@/lib/types/statements';
+import { parse } from 'date-fns';
 import { extractFileDetailLinesClaude } from '../ai/bank_details';
 import { fetchAllCategorizationRules } from '../database/categorization_rules';
 
 const applyCategorizationRules = (
   transactions: StatementType[],
   categorization_rules: CategorizationRuleType[],
-): BankTransactionType[] => {
+): StatementTransactionType[] => {
   return transactions.map((trx) => {
     for (const rule of categorization_rules) {
       let isRuleApplied = false;
@@ -55,6 +56,7 @@ const contentToTransactions = (
     lastLine,
     separator,
     headerSeparator,
+    dateFormat,
     headers,
   }: {
     header: string;
@@ -62,6 +64,7 @@ const contentToTransactions = (
     lastLine: string;
     separator: string;
     headerSeparator: string;
+    dateFormat: string;
     headers: StatementHeaderType;
   },
 ) => {
@@ -126,6 +129,16 @@ const contentToTransactions = (
         // match fileHeader header with transaction header => {Fecha: 'date'}
         if (flippedHeaders[fileHeader]) {
           // return {...obj, 'date': '10 Junio 2020'}
+          if (flippedHeaders[fileHeader] === 'date') {
+            return {
+              ...statementObj,
+              [flippedHeaders[fileHeader]]: parse(
+                statement[idx]?.trim() || '',
+                dateFormat,
+                new Date(),
+              ),
+            };
+          }
           return {
             ...statementObj,
             [flippedHeaders[fileHeader]]: statement[idx]?.trim() || '',
@@ -145,7 +158,7 @@ const contentToTransactions = (
 export const processBankStatementFileContent = async (
   content: string[],
 ): Promise<{
-  bank_transactions: BankTransactionType[];
+  bank_transactions: StatementTransactionType[];
   information: StatementInformationType;
 }> => {
   const {
@@ -154,6 +167,7 @@ export const processBankStatementFileContent = async (
     lastLine,
     separator,
     headerSeparator,
+    dateFormat,
     headers,
     information,
   }: {
@@ -162,6 +176,7 @@ export const processBankStatementFileContent = async (
     lastLine: string;
     separator: string;
     headerSeparator: string;
+    dateFormat: string;
     headers: StatementHeaderType;
     information: StatementInformationType;
   } = await extractFileDetailLinesClaude(content);
@@ -172,6 +187,7 @@ export const processBankStatementFileContent = async (
     lastLine,
     separator,
     headerSeparator,
+    dateFormat,
     headers,
   });
 

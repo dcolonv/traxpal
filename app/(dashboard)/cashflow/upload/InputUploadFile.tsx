@@ -2,8 +2,8 @@
 
 import { processBankStatementFileContent } from '@/actions/server/bank_statements';
 import {
-  BankTransactionType,
   StatementInformationType,
+  StatementTransactionType,
 } from '@/lib/types/statements';
 import { dynamicFileParser } from '@/utils/file-processing';
 import { DocumentTextIcon } from '@heroicons/react/24/outline';
@@ -11,7 +11,7 @@ import { useRef, useState } from 'react';
 
 interface InputUploadFileProps {
   onProcessFile: (props: {
-    bankTransactions: BankTransactionType[];
+    bankTransactions: StatementTransactionType[];
     information: StatementInformationType;
   }) => void;
 }

@@ -10,15 +10,21 @@ export type StatementHeaderType = {
 };
 
 export type StatementType = {
-  date: string;
+  date: Date;
   reference: string;
   description: string;
   debit: string;
   credit: string;
 };
 
-export type BankTransactionType = {
-  date: string;
+export type StatementTransactionErrorType = {
+  category?: string;
+  subcategory?: string;
+  clientProvider?: string;
+};
+
+export type StatementTransactionType = {
+  date: Date;
   description: string;
   credit: string;
   debit: string;
@@ -27,10 +33,21 @@ export type BankTransactionType = {
   subcategory?: SubcategoryType;
   clientProvider?: ClientProviderType;
   detail?: string;
+  error?: StatementTransactionErrorType;
+  bankAccount?: string;
+  bankName?: string;
+  currency?: string;
+};
+
+export type StatementInformationErrorType = {
+  bankAccount?: string;
+  bankName?: string;
+  currency?: string;
 };
 
 export type StatementInformationType = {
   bankAccount: string;
   bankName: string;
   currency: string;
+  error?: StatementInformationErrorType;
 };

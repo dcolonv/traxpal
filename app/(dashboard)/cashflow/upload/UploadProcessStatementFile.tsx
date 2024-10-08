@@ -1,23 +1,21 @@
 'use client';
 
+import { addTransactions } from '@/actions/database/transactions';
+import { useOrganization } from '@/components/providers/OrganizationProvider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CategoryType } from '@/lib/types/categories';
 import { ClientProviderType } from '@/lib/types/client_providers';
 import {
-  BankTransactionType,
+  StatementInformationErrorType,
   StatementInformationType,
+  StatementTransactionErrorType,
+  StatementTransactionType,
 } from '@/lib/types/statements';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 import BankTransactionsTable from './BankTransactionsTable';
 import InputUploadFile from './InputUploadFile';
-
-type InformationType = {
-  bankAccount: string;
-  bankName: string;
-  currency: string;
-};
 
 interface UploadProcessStatementFileProps {
   categories: CategoryType[];
@@ -28,44 +26,112 @@ export default function UploadProcessStatementFile({
   categories,
   clientsProviders,
 }: UploadProcessStatementFileProps) {
-  const [information, setInformation] = useState<InformationType>();
-  const [bankTransactions, setBankTransactions] = useState<
-    BankTransactionType[]
-  >([]);
+  const { organization } = useOrganization();
+  const [information, setInformation] = useState<StatementInformationType>();
+  const [bankTransactions, setBankTransactions] =
+    useState<StatementTransactionType[]>();
+  const [bankName, setBankName] = useState('');
+  const [bankAccount, setBankAccount] = useState('');
+  const [currency, setCurrency] = useState('');
+  const [informationError, setInformationError] =
+    useState<StatementInformationErrorType>();
 
   const handleClear = () => {
+    setInformation(undefined);
     setBankTransactions([]);
   };
 
-  const handleCellChange = (
-    rowIndex: number,
-    header: string,
-    value: string,
-  ) => {
-    console.log('here', { rowIndex, header, value });
-    const newData = [...bankTransactions];
-    console.log(newData);
-    // newData[rowIndex][header.toLowerCase()] = value;
-    setBankTransactions(newData);
-  };
-
-  const handleSave = async () => {
-    // try {
-    //   const { data, error } = await supabase.from('csv_data').insert(data);
-    //   if (error) throw error;
-    //   console.log('Data saved successfully', data);
-    //   router.push('/success');
-    // } catch (error) {
-    //   console.error('Error saving data', error);
-    // }
-  };
-
   const handleFileProcessed = (result: {
-    bankTransactions: BankTransactionType[];
+    bankTransactions: StatementTransactionType[];
     information: StatementInformationType;
   }) => {
     setBankTransactions(result.bankTransactions);
     setInformation(result.information);
+  };
+
+  const handleTransactionsChange = (
+    updatedTransactions: StatementTransactionType[],
+  ) => {
+    setBankTransactions(updatedTransactions);
+  };
+
+  const handleSave = async () => {
+    if (bankTransactions) {
+      // Check if all required fields are completed
+      let anyErrors = false;
+
+      const error: StatementInformationErrorType = {};
+      if (!information?.bankAccount && !bankAccount) {
+        error.bankAccount = 'Indicate a Bank account';
+        anyErrors = true;
+      }
+      if (!information?.bankName && !bankName) {
+        error.bankName = 'Indicate a Bank name';
+        anyErrors = true;
+      }
+      if (!information?.currency && !currency) {
+        error.currency = 'Indicate a currency';
+        anyErrors = true;
+      }
+      setInformationError(error);
+
+      const validatedTransactions = bankTransactions.map((transaction) => {
+        const error: StatementTransactionErrorType = {};
+        let hasError = false;
+        if (!transaction.category) {
+          error.category = 'Please indicate a category';
+          hasError = true;
+          anyErrors = true;
+        }
+        if (!transaction.subcategory) {
+          error.subcategory = 'Please indicate a subcategory';
+          hasError = true;
+          anyErrors = true;
+        }
+        if (!transaction.clientProvider) {
+          error.clientProvider = 'Please indicate a client or provider';
+          hasError = true;
+          anyErrors = true;
+        }
+
+        if (hasError) {
+          return {
+            ...transaction,
+            bankAccount: information?.bankAccount || bankAccount,
+            bankName: information?.bankName || bankName,
+            currency: information?.currency || currency,
+            error,
+          };
+        }
+
+        return {
+          ...transaction,
+          bankAccount: information?.bankAccount || bankAccount,
+          bankName: information?.bankName || bankName,
+          currency: information?.currency || currency,
+        };
+      });
+
+      setBankTransactions(validatedTransactions);
+
+      if (!anyErrors) {
+        try {
+          const { transactions, error } = await addTransactions({
+            transactions: validatedTransactions,
+            organization_id: organization?.id || '',
+          });
+
+          console.log({ transactions, error });
+          // if (error) throw error;
+          // console.log('Data saved successfully', data);
+          alert('Transactions saved successfully!');
+          handleClear();
+        } catch (error) {
+          console.error('Error saving data', error);
+          alert('Error saving transactions. Please try again.');
+        }
+      }
+    }
   };
 
   return (
@@ -89,16 +155,42 @@ export default function UploadProcessStatementFile({
                     Bank name
                   </dt>
                   <dd className="w-full flex-none text-xl font-medium leading-10 tracking-tight text-gray-900">
-                    {information?.bankName || <Input placeholder="Bank name" />}
+                    {information?.bankName || (
+                      <Input
+                        placeholder="Bank name"
+                        value={bankName}
+                        onChange={(e) => {
+                          setBankName(e.target.value);
+                          setInformationError(undefined);
+                        }}
+                      />
+                    )}
+                    {informationError?.bankName && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {informationError?.bankName}
+                      </p>
+                    )}
                   </dd>
                 </div>
                 <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 border border-gray-900/5 px-4 py-10 sm:px-6 xl:px-8">
                   <dt className="text-sm font-medium leading-6 text-gray-500">
                     Statement account
                   </dt>
-                  <dd className="w-full flex-none truncate text-xl font-medium leading-10 tracking-tight text-gray-900">
+                  <dd className="w-full flex-none text-xl font-medium leading-10 tracking-tight text-gray-900">
                     {information?.bankAccount || (
-                      <Input placeholder="Bank account" />
+                      <Input
+                        placeholder="Bank account"
+                        value={bankAccount}
+                        onChange={(e) => {
+                          setBankAccount(e.target.value);
+                          setInformationError(undefined);
+                        }}
+                      />
+                    )}
+                    {informationError?.bankAccount && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {informationError?.bankAccount}
+                      </p>
                     )}
                   </dd>
                 </div>
@@ -107,7 +199,21 @@ export default function UploadProcessStatementFile({
                     Currency
                   </dt>
                   <dd className="w-full flex-none text-xl font-medium leading-10 tracking-tight text-gray-900">
-                    {information?.currency || <Input placeholder="Currency" />}
+                    {information?.currency || (
+                      <Input
+                        placeholder="Currency"
+                        value={currency}
+                        onChange={(e) => {
+                          setCurrency(e.target.value);
+                          setInformationError(undefined);
+                        }}
+                      />
+                    )}
+                    {informationError?.currency && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {informationError?.currency}
+                      </p>
+                    )}
                   </dd>
                 </div>
               </dl>
@@ -136,6 +242,7 @@ export default function UploadProcessStatementFile({
               bankTransactions={bankTransactions}
               categories={categories}
               clientsProviders={clientsProviders}
+              onTransactionsChange={handleTransactionsChange}
             />
             <div className="my-6 flex flex-row items-center justify-between gap-6">
               <Button onClick={handleClear} variant="ghost">

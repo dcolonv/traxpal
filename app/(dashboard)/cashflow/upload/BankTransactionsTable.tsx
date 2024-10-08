@@ -1,25 +1,71 @@
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+'use client';
+
 import { CategoryType } from '@/lib/types/categories';
 import { ClientProviderType } from '@/lib/types/client_providers';
-import { BankTransactionType } from '@/lib/types/statements';
+import { StatementTransactionType } from '@/lib/types/statements';
+import TransactionRow from './TransactionRow';
 
 interface BankTransactionsTableProps {
-  bankTransactions: BankTransactionType[];
+  bankTransactions: StatementTransactionType[];
   categories: CategoryType[];
   clientsProviders: ClientProviderType[];
+  onTransactionsChange: (transactions: StatementTransactionType[]) => void;
 }
 
 export default function BankTransactionsTable({
   bankTransactions,
   categories,
   clientsProviders,
+  onTransactionsChange,
 }: BankTransactionsTableProps) {
+  const handleChange = (index: number, field: string, value: string) => {
+    const updatedTransactions = [...bankTransactions];
+
+    if (field === 'category') {
+      // find category by id
+      const categoryId = parseInt(value);
+      const category = categories.find((cat) => cat.id === categoryId);
+      // Reset subcategory when category changes
+      updatedTransactions[index] = {
+        ...updatedTransactions[index],
+        category,
+        subcategory: undefined,
+        error: undefined,
+      };
+    } else if (field === 'subcategory') {
+      // find subcategory by id
+      const subcategoryId = parseInt(value);
+      const subcategory = updatedTransactions[
+        index
+      ]?.category?.subcategories?.find((scat) => scat.id === subcategoryId);
+      // Reset subcategory when category changes
+      updatedTransactions[index] = {
+        ...updatedTransactions[index],
+        subcategory,
+        error: undefined,
+      };
+    } else if (field === 'clientProvider') {
+      // find clientProvider by id
+      const clientProviderId = parseInt(value);
+      const clientProvider = clientsProviders.find(
+        (cp) => cp.id === clientProviderId,
+      );
+      // Reset subcategory when category changes
+      updatedTransactions[index] = {
+        ...updatedTransactions[index],
+        clientProvider,
+        error: undefined,
+      };
+    } else {
+      updatedTransactions[index] = {
+        ...updatedTransactions[index],
+        [field]: value,
+      };
+    }
+
+    onTransactionsChange(updatedTransactions);
+  };
+
   return (
     <div className="-mx-8 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
       <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
@@ -87,71 +133,15 @@ export default function BankTransactionsTable({
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
-              {bankTransactions.map((bankTransaction) => (
-                <tr
-                  key={`${bankTransaction.date}-${bankTransaction.reference}`}
-                >
-                  <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                    {bankTransaction.date}
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-4 text-sm capitalize text-gray-500">
-                    {bankTransaction.reference}
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-4 text-sm capitalize text-gray-500">
-                    {bankTransaction.description}
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-4 text-sm capitalize text-gray-500">
-                    {bankTransaction.debit}
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-4 text-sm capitalize text-gray-500">
-                    {bankTransaction.credit}
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-4 text-sm capitalize text-gray-500">
-                    {bankTransaction.category?.name}
-                    <Select value={`${bankTransaction.category?.id || ''}`}>
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem
-                            key={category.id}
-                            value={`${category.id}`}
-                          >
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-4 text-sm capitalize text-gray-500">
-                    {bankTransaction.subcategory?.name}
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-4 text-sm capitalize text-gray-500">
-                    {bankTransaction.clientProvider?.name}
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-4 text-sm capitalize text-gray-500">
-                    {bankTransaction.detail}
-                  </td>
-                  <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                    {/* <CategorizationRuleFormDialog
-                        key={`${categorizationRule.rule}-${categorizationRule.criteria}-${categorizationRule.category_id}-${categorizationRule.subcategory_id}`}
-                        defaultCategorizationRule={categorizationRule}
-                        categories={categories}
-                      >
-                        <Button variant="outline">Edit</Button>
-                      </CategorizationRuleFormDialog>
-                      <RemoveDialog
-                        id={categorizationRule.id}
-                        name={`Rule ${categorizationRule.rule}: ${categorizationRule.criteria}`}
-                        remove={removeCategorizationRule}
-                      >
-                        <Button variant="destructive" className="ml-4">
-                          Remove
-                        </Button>
-                      </RemoveDialog> */}
-                  </td>
-                </tr>
+              {bankTransactions.map((transaction, index) => (
+                <TransactionRow
+                  key={index}
+                  index={index}
+                  transaction={transaction}
+                  categories={categories}
+                  clientsProviders={clientsProviders}
+                  handleChange={handleChange}
+                />
               ))}
             </tbody>
           </table>
