@@ -56,3 +56,8 @@ export const SIDEBAR_NAVIGATION = {
     },
   ],
 };
+
+export const CURRENCY_SYMBOL = {
+  USD: '$',
+  CRC: '₡',
+};

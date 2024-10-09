@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/select';
 import { CategoryType } from '@/lib/types/categories';
 import { ClientProviderType } from '@/lib/types/client_providers';
+import { formatCurrency } from '@/utils/helpers';
 
 interface TransactionRowProps {
   index: number;
@@ -43,10 +44,10 @@ export default function TransactionRow({
         {transaction.description}
       </td>
       <td className="whitespace-nowrap px-3 py-4 text-sm capitalize">
-        {transaction.debit}
+        {formatCurrency(transaction.debit)}
       </td>
       <td className="whitespace-nowrap px-3 py-4 text-sm capitalize">
-        {transaction.credit}
+        {formatCurrency(transaction.credit)}
       </td>
       <td className="whitespace-nowrap px-3 py-4 text-sm">
         <Select

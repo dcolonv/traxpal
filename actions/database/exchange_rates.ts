@@ -38,3 +38,23 @@ export async function fetchExchangeRates(
     pages: Math.ceil((count || 0) / itemsPerPage),
   };
 }
+
+export async function fetchAllExchangeRates(type: string): Promise<{
+  exchange_rates: ExchangeRateType[];
+}> {
+  const supabase = createClient();
+
+  const { data: exchange_rates, error } = await supabase
+    .from('exchange_rates')
+    .select('*')
+    .eq('type', type)
+    .order('date', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching exchange rates:', error);
+    throw error;
+  }
+  return {
+    exchange_rates,
+  };
+}

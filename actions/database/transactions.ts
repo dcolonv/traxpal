@@ -16,8 +16,8 @@ export async function addTransactions({
     date: trx.date,
     description: trx.description,
     reference: trx.reference,
-    debit: parseFloat(trx.debit),
-    credit: parseFloat(trx.credit),
+    debit: trx.debit,
+    credit: trx.credit,
     category_id: trx.category?.id,
     subcategory_id: trx.subcategory?.id,
     client_provider_id: trx.clientProvider?.id,
@@ -26,6 +26,9 @@ export async function addTransactions({
     bank_name: trx.bankName,
     currency: trx.currency,
     organization_id,
+    debit_usd: trx.debit_usd,
+    credit_usd: trx.credit_usd,
+    exchange_rate: trx.exchange_rate,
   }));
 
   const { data, error } = await supabase

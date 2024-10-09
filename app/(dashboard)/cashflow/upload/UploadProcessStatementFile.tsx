@@ -45,6 +45,7 @@ export default function UploadProcessStatementFile({
     bankTransactions: StatementTransactionType[];
     information: StatementInformationType;
   }) => {
+    console.log(result.bankTransactions);
     setBankTransactions(result.bankTransactions);
     setInformation(result.information);
   };
@@ -177,7 +178,8 @@ export default function UploadProcessStatementFile({
                     Statement account
                   </dt>
                   <dd className="w-full flex-none text-xl font-medium leading-10 tracking-tight text-gray-900">
-                    {information?.bankAccount || (
+                    {!information?.bankAccount ||
+                    information.bankAccount === 'Unknown' ? (
                       <Input
                         placeholder="Bank account"
                         value={bankAccount}
@@ -186,6 +188,8 @@ export default function UploadProcessStatementFile({
                           setInformationError(undefined);
                         }}
                       />
+                    ) : (
+                      information.bankAccount
                     )}
                     {informationError?.bankAccount && (
                       <p className="mt-1 text-sm text-red-500">

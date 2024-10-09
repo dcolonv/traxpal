@@ -2,6 +2,7 @@
 
 import { CategorizationRuleType } from '@/lib/types/categorization_rules';
 import { RuleTypeEnum } from '@/lib/types/enums';
+import { ExchangeRateType } from '@/lib/types/exchange_rates';
 import {
   StatementHeaderType,
   StatementInformationType,
@@ -11,6 +12,7 @@ import {
 import { parse } from 'date-fns';
 import { extractFileDetailLinesClaude } from '../ai/bank_details';
 import { fetchAllCategorizationRules } from '../database/categorization_rules';
+import { fetchAllExchangeRates } from '../database/exchange_rates';
 
 const applyCategorizationRules = (
   transactions: StatementType[],
@@ -34,6 +36,9 @@ const applyCategorizationRules = (
           reference: trx.reference,
           category: rule.category,
           subcategory: rule.subcategory,
+          credit_usd: trx.credit_usd,
+          debit_usd: trx.debit_usd,
+          exchange_rate: trx.exchange_rate || 1,
         };
       }
     }
@@ -44,6 +49,9 @@ const applyCategorizationRules = (
       credit: trx.credit,
       debit: trx.debit,
       reference: trx.reference,
+      credit_usd: trx.credit_usd,
+      debit_usd: trx.debit_usd,
+      exchange_rate: trx.exchange_rate || 1,
     };
   });
 };
@@ -58,6 +66,8 @@ const contentToTransactions = (
     headerSeparator,
     dateFormat,
     headers,
+    applyChangeToUSD,
+    exchangeRates,
   }: {
     header: string;
     firstLine: string;
@@ -66,6 +76,8 @@ const contentToTransactions = (
     headerSeparator: string;
     dateFormat: string;
     headers: StatementHeaderType;
+    applyChangeToUSD: boolean;
+    exchangeRates: ExchangeRateType[];
   },
 ) => {
   const headerIndex = content.findIndex((line) =>
@@ -129,14 +141,30 @@ const contentToTransactions = (
         // match fileHeader header with transaction header => {Fecha: 'date'}
         if (flippedHeaders[fileHeader]) {
           // return {...obj, 'date': '10 Junio 2020'}
+          // if field is date header, then format to date using dateFormat
           if (flippedHeaders[fileHeader] === 'date') {
+            const date = parse(
+              statement[idx]?.trim() || '',
+              dateFormat,
+              new Date(),
+            );
             return {
               ...statementObj,
-              [flippedHeaders[fileHeader]]: parse(
-                statement[idx]?.trim() || '',
-                dateFormat,
-                new Date(),
-              ),
+              [flippedHeaders[fileHeader]]: date,
+            };
+          }
+
+          // if field is credit or debit header, then format to float using decimalSeparator
+          if (
+            flippedHeaders[fileHeader] === 'credit' ||
+            flippedHeaders[fileHeader] === 'debit'
+          ) {
+            const cleanedNumber = statement[idx]?.trim().replace(/[^\d.]/g, '');
+            const number = parseFloat(cleanedNumber);
+            return {
+              ...statementObj,
+              [flippedHeaders[fileHeader]]: number || 0,
+              [`${flippedHeaders[fileHeader]}_usd`]: number || 0,
             };
           }
           return {
@@ -148,6 +176,31 @@ const contentToTransactions = (
       },
       {} as StatementType,
     );
+
+    if (applyChangeToUSD) {
+      const transactionDate = mappedTransaction.date;
+      const applicableExchangeRate = exchangeRates.find(
+        (rate) =>
+          new Date(rate.date).toDateString() === transactionDate.toDateString(),
+      );
+
+      if (applicableExchangeRate) {
+        const averageRate =
+          (applicableExchangeRate.buy + applicableExchangeRate.sell) / 2;
+
+        if (mappedTransaction.credit) {
+          const creditUSD = mappedTransaction.credit / averageRate;
+          mappedTransaction.credit_usd = creditUSD;
+        }
+
+        if (mappedTransaction.debit) {
+          const debitUSD = mappedTransaction.debit / averageRate;
+          mappedTransaction.debit_usd = debitUSD;
+        }
+
+        mappedTransaction.exchange_rate = averageRate;
+      }
+    }
 
     return mappedTransaction;
   });
@@ -181,6 +234,15 @@ export const processBankStatementFileContent = async (
     information: StatementInformationType;
   } = await extractFileDetailLinesClaude(content);
 
+  let dataExchange: { exchange_rates: ExchangeRateType[] } = {
+    exchange_rates: [],
+  };
+
+  const { categorization_rules } = await fetchAllCategorizationRules();
+  if (information.currency !== 'USD') {
+    dataExchange = await fetchAllExchangeRates(`USD-${information.currency}`);
+  }
+
   const transactions = contentToTransactions(content, {
     header,
     firstLine,
@@ -189,9 +251,9 @@ export const processBankStatementFileContent = async (
     headerSeparator,
     dateFormat,
     headers,
+    applyChangeToUSD: !!information.currency && information.currency !== 'USD',
+    exchangeRates: dataExchange.exchange_rates,
   });
-
-  const { categorization_rules } = await fetchAllCategorizationRules();
 
   const categorizedBankTransactions = applyCategorizationRules(
     transactions,

@@ -24,7 +24,20 @@ const systemPrompt = `You are a helpful assistant that can identify and extract 
 - You will return the separator used in the text it can be space, tab, "," or ";" or any other you find, separator are a single character.
 - You will return the texts of headers corresponding to Date, Reference or Document number, Description, Debit, and Credit
 - You will return important information as currency of transactions, bank account number, bank name, etc, as possible
-- Only respond with a JSON format: {header: headerLine, firstLine: first transaction, lastLine: last transaction line, headerSeparator: header separator character, separator: separator character used on the text lines, dateFormat: format used on date to parse it correctly using javascript library date-fns, headers: {date: date header text, reference: reference or document number, description: description header text, debit: debit header text, credit: credit header text}, information: {currency: transactions currency, bankAccount: bank account, bankName: bank name}} and nothing else, avoid extra comments or explanation, I only want the json object to be parsed into a Javascript object.
+- Only respond with a JSON format: 
+  {
+    header: headerLine,
+    firstLine: first transaction,
+    lastLine: last transaction line,
+    headerSeparator: header separator character,
+    separator: separator character used on the text lines,
+    dateFormat: format used on date to parse it correctly using javascript library date-fns,
+    numberFormat: format used on debit or credit numbers,
+    decimalSeparator: decimal separator used on debit or credit numbers,
+    headers: {date: date header text, reference: reference or document number, description: description header text, debit: debit header text, credit: credit header text},
+    information: {currency: transactions currency, bankAccount: bank account, bankName: bank name}
+  } 
+  and nothing else, avoid extra comments or explanation, I only want the json object to be parsed into a Javascript object.
 `;
 
 function extractDataFromJsonResponse(response: string): ExtractedData | null {

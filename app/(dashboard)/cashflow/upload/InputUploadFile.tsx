@@ -32,7 +32,6 @@ export default function InputUploadFile({
       onProcessFile({ bankTransactions: bank_transactions, information });
     } catch (error) {
       console.error('Error processing file:', error);
-      // Handle error (e.g., show error message to user)
     }
   };
 

@@ -13,8 +13,11 @@ export type StatementType = {
   date: Date;
   reference: string;
   description: string;
-  debit: string;
-  credit: string;
+  debit: number;
+  credit: number;
+  debit_usd: number;
+  credit_usd: number;
+  exchange_rate: number;
 };
 
 export type StatementTransactionErrorType = {
@@ -26,8 +29,8 @@ export type StatementTransactionErrorType = {
 export type StatementTransactionType = {
   date: Date;
   description: string;
-  credit: string;
-  debit: string;
+  credit: number;
+  debit: number;
   reference: string;
   category?: CategoryType;
   subcategory?: SubcategoryType;
@@ -37,6 +40,9 @@ export type StatementTransactionType = {
   bankAccount?: string;
   bankName?: string;
   currency?: string;
+  credit_usd: number;
+  debit_usd: number;
+  exchange_rate: number;
 };
 
 export type StatementInformationErrorType = {

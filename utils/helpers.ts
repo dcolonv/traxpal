@@ -47,3 +47,14 @@ export function getPaginationFactorsArray(n: number): number[] {
     return [2, 1, 0];
   }
 }
+
+export function formatCurrency(
+  amount: number,
+  decimalPlaces: number = 2,
+  locale: string = 'en-US',
+): string {
+  return amount.toLocaleString(locale, {
+    minimumFractionDigits: decimalPlaces,
+    maximumFractionDigits: decimalPlaces,
+  });
+}
